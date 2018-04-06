@@ -9,11 +9,21 @@
 public class Circle {
 	// This class represents a circle
 	
+	public class InvalidValueException extends Exception {
+	    public InvalidValueException(String cause) {
+	        super(cause);
+	    }
+	}
+	
 	double radius;
 	
-	public Circle(double radius) {
+	public Circle(double radius) throws InvalidValueException {
 		// Constructor for Circle class
-		this.radius = radius;
+		if (radius > 0) {
+			this.radius = radius;
+		} else {
+			throw new InvalidValueException("Radius is zero or negative");
+		}
 	}
 	
 	public double getRadius() { return radius; } // Getter
