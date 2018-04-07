@@ -32,7 +32,7 @@ public class Main {
 			}
 		}
 		
-		Triangle t = new Triangle(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5]);
-		System.out.println(t.getData());
+		Triangle triangle = new Triangle(inputs[0], inputs[1], inputs[2], inputs[3], inputs[4], inputs[5]);
+		System.out.println(triangle.getData());
 	}
 }
