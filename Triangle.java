@@ -31,7 +31,9 @@ public class Triangle {
 			this.length = length;
 		}
 		
-		private double getDegrees() {
+		public double getLength() { return length; } // Getter
+		
+		public double getDegrees() {
 			// Get the size in degrees
 			return oppositeAngle * 180 / Math.PI;
 		}
