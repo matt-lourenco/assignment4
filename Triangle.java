@@ -9,103 +9,212 @@
 public class Triangle {
 	// This class represents a triangle
 	
+	@SuppressWarnings("serial")
 	public class InvalidValueException extends Exception {
 	    public InvalidValueException(String cause) {
 	        super(cause);
 	    }
 	}
 	
-	private Line base;
-	private Line lineA;
-	private Line lineB;
-	
-	private class Angle {
-		// This class represents an angle
-		
-		private double size;
-		
-		private Angle() throws InvalidValueException {
-			// Default constructor
-			this(Math.PI);
-		}
-		
-		private Angle(double size) throws InvalidValueException {
-			// Constructor
-			this.setSize(size);
-		}
-		
-		private double getSize() { return size; }
-		
-		private void setSize(double newSize) throws InvalidValueException {
-			if (newSize >= 0 && newSize <= 2*Math.PI) {
-				size = newSize;
-			} else {
-				throw new InvalidValueException("Angle out of valid range");
-			}
-		}
-	}
+	private Line base = new Line(0);
+	private Line lineB = new Line(0);
+	private Line lineC = new Line(0);
 	
 	private class Line {
 		// This class represents a straight line
 		
-		public double length;
-		private Angle oppositeAngle;
+		private double length = 0;
+		private double oppositeAngle = 0;
 		
 		private Line(double length) {
 			// Constructor for line using length
 			this.length = length;
 		}
 		
-		private Line(Angle angle) {
-			// Constructor for line using Angle
-			this.oppositeAngle = angle;
+		private double getDegrees() {
+			// Get the size in degrees
+			return oppositeAngle * 180 / Math.PI;
 		}
 		
-		public double getOppAngle() {
-			// Getter
-			return oppositeAngle.getSize();
-		}
-		
-		private void setOppAngle(double newAngle) throws InvalidValueException {
-			// Setter
-			oppositeAngle.setSize(newAngle);
+		private boolean completePair() {
+			//Checks if both length and angle are set
+			return (length > 0 && oppositeAngle > 0 &&
+					oppositeAngle < Math.PI);
 		}
 	}
 	
-	public Triangle(double length1, double length2, double length3) throws InvalidValueException {
-		// Constructor including three lines
-		base = new Line(length1);
-		lineA = new Line(length2);
-		lineB = new Line(length3);
-		base.setOppAngle(this.cosLawAngle(base.length, lineA.length, lineB.length));
-		lineA.setOppAngle(this.sinLawAngle(base.length, base.getOppAngle(), lineA.length));
-		lineB.setOppAngle(Math.PI - base.getOppAngle() - lineB.getOppAngle());
-		this.isTriangleValid();
-		}
-	
-	public Triangle(double length1, double length2, Angle angle) {
-		// Constructor including two lines and an angle
+	public Triangle() throws InvalidValueException {
+		// Default constructor
+		this(3, 3, 3, 0, 0, 0);
 	}
 	
-	public Triangle(double length, Angle angle1, Angle angle2) {
-		// Constructor including one line and two angles
+	public Triangle(double length1, double length2, double length3,
+					double angle1, double angle2, double angle3)
+					throws InvalidValueException {
+		// Constructor
+		base.length = length1;
+		lineB.length = length2;
+		lineC.length = length3;
+		base.oppositeAngle = angle1;
+		lineB.oppositeAngle = angle2;
+		lineC.oppositeAngle = angle3;
+		
+		isTriangleValid();
+		
+		Line sinePair = new Line(0); //Pair of length and angle for sine law
+		Line[] lines = {base, lineB, lineC};
+		for (Line line: lines) {
+			if (line.completePair()) {
+				sinePair = line;
+				break;
+			}
+		}
+		
+		if (getValidLengths() == 3) {
+			// Only lengths have been inputted
+			
+			// Find each angle
+			base.oppositeAngle = cosLawAngle(base.length, lineB.length,
+												lineC.length);
+			lineB.oppositeAngle = sinLawAngle(base.length, base.oppositeAngle,
+												lineB.length);
+			lineC.oppositeAngle = Math.PI - base.oppositeAngle
+								- lineB.oppositeAngle;
+			
+		} else if (getValidLengths() == 2) {
+			// Two lengths and one angle have been inputted
+			
+			// complete the sine pair in case one was not already found
+			if (sinePair.length == 0) {
+				if (base.oppositeAngle != 0) {
+					base.length = cosLawLength(lineB.length,
+											lineC.length,
+											base.oppositeAngle);
+					sinePair = base;
+					
+				} else if (lineB.oppositeAngle != 0) {
+					lineB.length = cosLawLength(base.length,
+												lineC.length,
+												lineB.oppositeAngle);
+					sinePair = lineB;
+					
+				} else if (lineC.oppositeAngle != 0) {
+					lineC.length = cosLawLength(lineB.length,
+												base.length,
+												lineC.oppositeAngle);
+					sinePair = lineC;
+					
+				}
+			}
+			
+			// Find the second angle using sine law
+			if (base.length != 0 && base.oppositeAngle == 0) {
+				base.oppositeAngle = sinLawAngle(sinePair.length,
+						sinePair.oppositeAngle, base.length);
+			} else if (lineB.length != 0 && lineB.oppositeAngle == 0) {
+				lineB.oppositeAngle = sinLawAngle(sinePair.length,
+						sinePair.oppositeAngle, lineB.length);
+			} else if (lineC.length != 0 && lineC.oppositeAngle == 0) {
+				lineC.oppositeAngle = sinLawAngle(sinePair.length,
+						sinePair.oppositeAngle, lineC.length);
+			}
+			
+			// Find the final angle using the sum of the angles
+			if (base.oppositeAngle == 0) {
+				base.oppositeAngle = Math.PI - lineB.oppositeAngle
+						- lineC.oppositeAngle;
+			} else if (lineB.oppositeAngle == 0) {
+				lineB.oppositeAngle = Math.PI - base.oppositeAngle
+						- lineC.oppositeAngle;
+			} else if (lineC.oppositeAngle == 0) {
+				lineC.oppositeAngle = Math.PI - lineB.oppositeAngle
+						- base.oppositeAngle;
+			}
+			
+			// Find the final length using sine law
+			if (base.length == 0 && base.oppositeAngle != 0) {
+				base.length = sinLawLength(sinePair.length,
+						sinePair.oppositeAngle, base.oppositeAngle);
+			} else if (lineB.length == 0 && lineB.oppositeAngle != 0) {
+				lineB.length = sinLawLength(sinePair.length,
+						sinePair.oppositeAngle, lineB.oppositeAngle);
+			} else if (lineC.length == 0 && lineC.oppositeAngle != 0) {
+				lineC.length = sinLawLength(sinePair.length,
+						sinePair.oppositeAngle, lineC.oppositeAngle);
+			}
+			
+		} else if (getValidLengths() == 1) {
+			// One length and two angles have been inputted
+			
+			// Find the final angle using the sum of the angles
+			if (base.oppositeAngle == 0) {
+				base.oppositeAngle = Math.PI - lineB.oppositeAngle
+						- lineC.oppositeAngle;
+			} else if (lineB.oppositeAngle == 0) {
+				lineB.oppositeAngle = Math.PI - base.oppositeAngle
+						- lineC.oppositeAngle;
+			} else if (lineC.oppositeAngle == 0) {
+				lineC.oppositeAngle = Math.PI - lineB.oppositeAngle
+						- base.oppositeAngle;
+			}
+			
+			if (sinePair.length == 0) {
+				// Find new sine pair in case one was not already found
+				for (Line line: lines) {
+					if (line.completePair()) {
+						sinePair = line;
+						break;
+					}
+				}
+			}
+			
+			// Find the final two lengths useing sine law
+			if (base.length == 0 && base.oppositeAngle != 0) {
+				base.length = sinLawLength(sinePair.length,
+						sinePair.oppositeAngle, base.oppositeAngle);
+			}
+			if (lineB.length == 0 && lineB.oppositeAngle != 0) {
+				lineB.length = sinLawLength(sinePair.length,
+						sinePair.oppositeAngle, lineB.oppositeAngle);
+			}
+			if (lineC.length == 0 && lineC.oppositeAngle != 0) {
+				lineC.length = sinLawLength(sinePair.length,
+						sinePair.oppositeAngle, lineC.oppositeAngle);
+			}
+		}
+	}
+	
+	private double custRound(double value) {
+		return Math.round(value * 1000d) / 1000d;
 	}
 	
 	public Line getBase() { return base; } // Getter
 	
-	public Line getLineA() { return lineA; } // Getter
-	
 	public Line getLineB() { return lineB; } // Getter
+	
+	public Line getLineC() { return lineC; } // Getter
 	
 	public String getName() {
 		// Determines the name of the triangle based on side and angle lengths
 		String name = "";
-		if (base.length == lineA.length && base.length == lineB.length) {
+		double length1 = custRound(base.length);
+		double length2 = custRound(lineB.length);
+		double length3 = custRound(lineC.length);
+		double angle1 = custRound(base.oppositeAngle);
+		double angle2 = custRound(lineB.oppositeAngle);
+		double angle3 = custRound(lineC.oppositeAngle);
+		
+		if (length1 == length2 && length1 == length3) {
 			name = "Equilateral ";
 		} else {
-			if (base.getOppAngle() == Math.PI || lineA.getOppAngle() == Math.PI || lineB.getOppAngle() == Math.PI) {
+			if (angle1 == custRound(Math.PI / 2) ||
+				angle2 == custRound(Math.PI / 2) ||
+				angle3 == custRound(Math.PI / 2)) {
 				name = "Right angle ";
-			} else if (base.length == lineA.length || base.length == lineB.length || lineA.length == lineB.length) {
+			}
+			if (length1 == length2 ||
+						length1 == length3 ||
+						length2 == length3) {
 				name += "Isosceles ";
 			}
 		}
@@ -121,76 +230,129 @@ public class Triangle {
 	
 	public double getPerimeter() {
 		// Getter
-		return base.length + lineA.length + lineB.length;
+		return custRound(base.length + lineB.length + lineC.length);
 	}
 	
 	public double getSemiperimeter() {
 		// Getter
-		return this.getPerimeter() / 2;
+		return custRound(getPerimeter() / 2);
 	}
 	
 	public double getArea() {
 		// Getter
-		double area = Math.sqrt(this.getSemiperimeter() * 
-				(this.getSemiperimeter() - base.length) * 
-				(this.getSemiperimeter() - lineA.length) * 
-				(this.getSemiperimeter() - lineB.length));
-		return area;
+		double area = Math.sqrt(getSemiperimeter() * 
+				(getSemiperimeter() - base.length) * 
+				(getSemiperimeter() - lineB.length) * 
+				(getSemiperimeter() - lineC.length));
+		return custRound(area);
 	}
 	
 	public double getHeight() {
 		// Getter
-		return this.getArea() * 2 / base.length;
+		return custRound(getArea() * 2 / base.length);
 	}
 	
 	public Circle getInCircle() throws Circle.InvalidValueException {
 		// Getter
-		Circle inscribedCircle = new Circle(getArea() / this.getSemiperimeter());
+		Circle inscribedCircle = new Circle(getArea() / getSemiperimeter());
 		return inscribedCircle;
 	}
 	
-	public Circle getCircumcircle() throws Circle.InvalidValueException {
+	public Circle getCircumcircle() throws Exception {
 		// Getter
-		double radius = base.length * lineA.length * lineB.length / 4 / getArea();
+		double radius = base.length * lineB.length * lineC.length
+				/ 4 / getArea();
 		return new Circle(radius);
 	}
 	
-	private boolean isInputValid(Angle input) {
-		// Determine if an angle is valid
-		return (input.getSize() > 0 && input.getSize() < Math.PI);
+	private int getValidLengths() {
+		// Checks how many lengths of the triangle are valid
+		double[] lengths = {base.length, lineB.length, lineC.length};
+		int validLengths = 0;
+		for (double length: lengths) {
+			if (length > 0) {
+				validLengths++;
+			}
+		}
+		return validLengths;
 	}
 	
-	private boolean isInputValid(double input) {
-		// Determine if a length is valid
-		return input > 0;
+	private int getValidAngles() {
+		// Checks how many values of the triangle are valid
+		double[] angles = {base.oppositeAngle,
+							lineB.oppositeAngle,
+							lineC.oppositeAngle};
+		int validAngles = 0;
+		for (double angle: angles) {
+			if (angle > 0 && angle < Math.PI) {
+				validAngles++;
+			}
+		}
+		return validAngles;
 	}
 	
-	private boolean isTriangleValid() {
-		// Determine if entire triangle is valid
-		return (isInputValid(base.length) && isInputValid(base.oppositeAngle) &&
-				isInputValid(lineA.length) && isInputValid(lineA.oppositeAngle) &&
-				isInputValid(lineB.length) && isInputValid(lineB.oppositeAngle));
+	protected void isTriangleValid() throws InvalidValueException {
+		
+		int lengths = getValidLengths();
+		int angles = getValidAngles();
+		
+		if (lengths + angles != 3) {
+			// Less than three values were inputted
+			throw new InvalidValueException("Invalid number of valid inputs");
+		}
+		
+		if (base.oppositeAngle + lineB.oppositeAngle +
+				lineC.oppositeAngle > Math.PI) {
+			// Angles add up to greater than PI
+			throw new InvalidValueException("Angles add up to greater than PI");
+		}
+		
+		if (lengths == 0 && angles == 3) {
+			// Only three angles were inputted
+			throw new InvalidValueException("Only angles were inputted");
+		}
 	}
 	
-	private double sinLawLength(double pairLength, double pairAngle, double unpairedAngle) {
+	private double sinLawLength(double pairLength, double pairAngle,
+								double unpairedAngle) {
 		// This method uses the sine law to determine a length
 		return pairLength * Math.sin(unpairedAngle) / Math.sin(pairAngle);
 	}
 	
-	private double sinLawAngle(double pairLength, double pairAngle, double unpairedLength) {
+	private double sinLawAngle(double pairLength, double pairAngle,
+								double unpairedLength) {
 		// This method uses the sine law to determine an angle
 		return Math.asin(Math.sin(pairAngle) * unpairedLength / pairLength);
 	}
 	
-	private double cosLawLength(double length1, double length2, double angle) {
+	private double cosLawLength(double length1, double length2,
+								double angle) {
 		// This method uses the cosine law to determine a length
 		return Math.sqrt(Math.pow(length1, 2) + Math.pow(length2, 2) -
 				(2 * length1 * length2 * Math.cos(angle)));
 	}
 	
-	private double cosLawAngle(double oppositeSide, double length1, double length2) {
+	private double cosLawAngle(double oppositeSide, double length1,
+								double length2) {
 		// This method uses the cosine law to determine an angle
 		return Math.acos((Math.pow(oppositeSide, 2) - Math.pow(length1, 2) -
 				Math.pow(length2, 2)) / (-2 * length1 * length2));
+	}
+	
+	public String getData() throws Exception {
+		// Returns all data of the triangle
+		return "Name: " + getName() + "\n" +
+				"Side A length: " + custRound(base.length) + "\n" +
+				"Angle A: " + custRound(base.getDegrees()) + " degrees\n" +
+				"Side B length: " + custRound(lineB.length) + "\n" +
+				"Angle B: " + custRound(lineB.getDegrees()) + " degrees\n" +
+				"Side C length: " + custRound(lineC.length) + "\n" +
+				"Angle C: " + custRound(lineC.getDegrees()) + " degrees\n" +
+				"Height: " + getHeight() + "\n" +
+				"Perimeter: " + getPerimeter() + "\n" +
+				"Semi-perimeter: " + getSemiperimeter() + "\n" +
+				"Area: " + getArea() + "\n" +
+				"\nLargest Inscribed circle:\n" + getInCircle().getData() + "\n" +
+				"\nCircumcircle:\n" + getCircumcircle().getData();
 	}
 }

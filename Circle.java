@@ -9,13 +9,14 @@
 public class Circle {
 	// This class represents a circle
 	
+	@SuppressWarnings("serial")
 	public class InvalidValueException extends Exception {
 	    public InvalidValueException(String cause) {
 	        super(cause);
 	    }
 	}
 	
-	double radius;
+	private double radius;
 	
 	public Circle(double radius) throws InvalidValueException {
 		// Constructor for Circle class
@@ -26,15 +27,26 @@ public class Circle {
 		}
 	}
 	
-	public double getRadius() { return radius; } // Getter
+	private double custRound(double value) {
+		return Math.round(value * 1000d) / 1000d;
+	}
 	
-	public double getCircumfrence() {
-		//Calculates and returns the circumfrence
-		return 2 * radius * Math.PI;
+	public double getRadius() { return custRound(radius); } // Getter
+	
+	public double getCircumference() {
+		//Calculates and returns the circumference
+		return custRound(2 * radius * Math.PI);
 	}
 	
 	public double getArea() {
 		//Calculates and returns the area
-		return Math.PI * Math.pow(radius, 2);
+		return custRound(Math.PI * Math.pow(radius, 2));
+	}
+	
+	public String getData() {
+		// Returns all data of the triangle
+		return "Radius: " + getRadius() + "\n" +
+				"Circumference: " + getCircumference() + "\n" +
+				"Area: " + getArea();
 	}
 }
