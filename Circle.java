@@ -16,7 +16,7 @@ public class Circle {
 	    }
 	}
 	
-	private double radius;
+	private double radius = 1;
 	
 	public Circle(double radius) throws InvalidValueException {
 		// Constructor for Circle class

@@ -86,19 +86,19 @@ public class Triangle {
 			
 			// complete the sine pair in case one was not already found
 			if (sinePair.length == 0) {
-				if (base.oppositeAngle != 0) {
+				if (validAngle(base.oppositeAngle)) {
 					base.length = cosLawLength(lineB.length,
 											lineC.length,
 											base.oppositeAngle);
 					sinePair = base;
 					
-				} else if (lineB.oppositeAngle != 0) {
+				} else if (validAngle(lineB.oppositeAngle)) {
 					lineB.length = cosLawLength(base.length,
 												lineC.length,
 												lineB.oppositeAngle);
 					sinePair = lineB;
 					
-				} else if (lineC.oppositeAngle != 0) {
+				} else if (validAngle(lineC.oppositeAngle)) {
 					lineC.length = cosLawLength(lineB.length,
 												base.length,
 												lineC.oppositeAngle);
@@ -108,37 +108,37 @@ public class Triangle {
 			}
 			
 			// Find the second angle using sine law
-			if (base.length != 0 && base.oppositeAngle == 0) {
+			if (validLength(base.length) && !validAngle(base.oppositeAngle)) {
 				base.oppositeAngle = sinLawAngle(sinePair.length,
 						sinePair.oppositeAngle, base.length);
-			} else if (lineB.length != 0 && lineB.oppositeAngle == 0) {
+			} else if (validLength(lineB.length) && !validAngle(lineB.oppositeAngle)) {
 				lineB.oppositeAngle = sinLawAngle(sinePair.length,
 						sinePair.oppositeAngle, lineB.length);
-			} else if (lineC.length != 0 && lineC.oppositeAngle == 0) {
+			} else if (validLength(lineC.length) && !validAngle(lineC.oppositeAngle)) {
 				lineC.oppositeAngle = sinLawAngle(sinePair.length,
 						sinePair.oppositeAngle, lineC.length);
 			}
 			
 			// Find the final angle using the sum of the angles
-			if (base.oppositeAngle == 0) {
+			if (!validAngle(base.oppositeAngle)) {
 				base.oppositeAngle = Math.PI - lineB.oppositeAngle
 						- lineC.oppositeAngle;
-			} else if (lineB.oppositeAngle == 0) {
+			} else if (!validAngle(lineB.oppositeAngle)) {
 				lineB.oppositeAngle = Math.PI - base.oppositeAngle
 						- lineC.oppositeAngle;
-			} else if (lineC.oppositeAngle == 0) {
+			} else if (!validAngle(lineC.oppositeAngle)) {
 				lineC.oppositeAngle = Math.PI - lineB.oppositeAngle
 						- base.oppositeAngle;
 			}
 			
 			// Find the final length using sine law
-			if (base.length == 0 && base.oppositeAngle != 0) {
+			if (!validLength(base.length)) {
 				base.length = sinLawLength(sinePair.length,
 						sinePair.oppositeAngle, base.oppositeAngle);
-			} else if (lineB.length == 0 && lineB.oppositeAngle != 0) {
+			} else if (!validLength(lineB.length)) {
 				lineB.length = sinLawLength(sinePair.length,
 						sinePair.oppositeAngle, lineB.oppositeAngle);
-			} else if (lineC.length == 0 && lineC.oppositeAngle != 0) {
+			} else if (!validLength(lineC.length)) {
 				lineC.length = sinLawLength(sinePair.length,
 						sinePair.oppositeAngle, lineC.oppositeAngle);
 			}
@@ -147,13 +147,13 @@ public class Triangle {
 			// One length and two angles have been inputted
 			
 			// Find the final angle using the sum of the angles
-			if (base.oppositeAngle == 0) {
+			if (!validAngle(base.oppositeAngle)) {
 				base.oppositeAngle = Math.PI - lineB.oppositeAngle
 						- lineC.oppositeAngle;
-			} else if (lineB.oppositeAngle == 0) {
+			} else if (!validAngle(lineB.oppositeAngle)) {
 				lineB.oppositeAngle = Math.PI - base.oppositeAngle
 						- lineC.oppositeAngle;
-			} else if (lineC.oppositeAngle == 0) {
+			} else if (!validAngle(lineC.oppositeAngle)) {
 				lineC.oppositeAngle = Math.PI - lineB.oppositeAngle
 						- base.oppositeAngle;
 			}
@@ -168,16 +168,16 @@ public class Triangle {
 				}
 			}
 			
-			// Find the final two lengths useing sine law
-			if (base.length == 0 && base.oppositeAngle != 0) {
+			// Find the final two lengths using sine law
+			if (!validLength(base.length)) {
 				base.length = sinLawLength(sinePair.length,
 						sinePair.oppositeAngle, base.oppositeAngle);
 			}
-			if (lineB.length == 0 && lineB.oppositeAngle != 0) {
+			if (!validLength(lineB.length)) {
 				lineB.length = sinLawLength(sinePair.length,
 						sinePair.oppositeAngle, lineB.oppositeAngle);
 			}
-			if (lineC.length == 0 && lineC.oppositeAngle != 0) {
+			if (!validLength(lineC.length)) {
 				lineC.length = sinLawLength(sinePair.length,
 						sinePair.oppositeAngle, lineC.oppositeAngle);
 			}
@@ -258,11 +258,21 @@ public class Triangle {
 		return inscribedCircle;
 	}
 	
-	public Circle getCircumcircle() throws Exception {
+	public Circle getCircumcircle() throws Circle.InvalidValueException {
 		// Getter
 		double radius = base.length * lineB.length * lineC.length
 				/ 4 / getArea();
 		return new Circle(radius);
+	}
+	
+	private boolean validLength(double length) {
+		// Check if length is valid
+		return length > 0;
+	}
+	
+	private boolean validAngle(double angle) {
+		// Check if angle is valid
+		return angle > 0 && angle < Math.PI;
 	}
 	
 	private int getValidLengths() {
@@ -270,7 +280,7 @@ public class Triangle {
 		double[] lengths = {base.length, lineB.length, lineC.length};
 		int validLengths = 0;
 		for (double length: lengths) {
-			if (length > 0) {
+			if (validLength(length)) {
 				validLengths++;
 			}
 		}
@@ -284,7 +294,7 @@ public class Triangle {
 							lineC.oppositeAngle};
 		int validAngles = 0;
 		for (double angle: angles) {
-			if (angle > 0 && angle < Math.PI) {
+			if (validAngle(angle)) {
 				validAngles++;
 			}
 		}
