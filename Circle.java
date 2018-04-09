@@ -9,7 +9,6 @@
 public class Circle {
 	// This class represents a circle
 	
-	@SuppressWarnings("serial")
 	public class InvalidValueException extends Exception {
 	    public InvalidValueException(String cause) {
 	        super(cause);
@@ -44,7 +43,7 @@ public class Circle {
 	}
 	
 	public String getData() {
-		// Returns all data of the triangle
+		// Returns all data of the circle
 		return "Radius: " + getRadius() + "\n" +
 				"Circumference: " + getCircumference() + "\n" +
 				"Area: " + getArea();

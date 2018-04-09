@@ -9,7 +9,6 @@
 public class Triangle {
 	// This class represents a triangle
 	
-	@SuppressWarnings("serial")
 	public class InvalidValueException extends Exception {
 	    public InvalidValueException(String cause) {
 	        super(cause);
@@ -232,12 +231,12 @@ public class Triangle {
 	
 	public double getPerimeter() {
 		// Getter
-		return custRound(base.length + lineB.length + lineC.length);
+		return base.length + lineB.length + lineC.length;
 	}
 	
 	public double getSemiperimeter() {
 		// Getter
-		return custRound(getPerimeter() / 2);
+		return getPerimeter() / 2;
 	}
 	
 	public double getArea() {
@@ -246,12 +245,12 @@ public class Triangle {
 				(getSemiperimeter() - base.length) * 
 				(getSemiperimeter() - lineB.length) * 
 				(getSemiperimeter() - lineC.length));
-		return custRound(area);
+		return area;
 	}
 	
 	public double getHeight() {
 		// Getter
-		return custRound(getArea() * 2 / base.length);
+		return getArea() * 2 / base.length;
 	}
 	
 	public Circle getInCircle() throws Circle.InvalidValueException {
@@ -360,10 +359,10 @@ public class Triangle {
 				"Angle B: " + custRound(lineB.getDegrees()) + " degrees\n" +
 				"Side C length: " + custRound(lineC.length) + "\n" +
 				"Angle C: " + custRound(lineC.getDegrees()) + " degrees\n" +
-				"Height: " + getHeight() + "\n" +
-				"Perimeter: " + getPerimeter() + "\n" +
-				"Semi-perimeter: " + getSemiperimeter() + "\n" +
-				"Area: " + getArea() + "\n" +
+				"Height: " + custRound(getHeight()) + "\n" +
+				"Perimeter: " + custRound(getPerimeter()) + "\n" +
+				"Semi-perimeter: " + custRound(getSemiperimeter()) + "\n" +
+				"Area: " + custRound(getArea()) + "\n" +
 				"\nLargest Inscribed circle:\n" + getInCircle().getData() + "\n" +
 				"\nCircumcircle:\n" + getCircumcircle().getData();
 	}
